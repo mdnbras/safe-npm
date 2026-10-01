@@ -49,6 +49,7 @@ pub fn scan_tarball_with_signals(package:&str,version:&str,bytes:&[u8],signals:O
         for rule in &rules{if rule.regex.is_match(&content){findings.push(Finding{rule:rule.id.into(),severity:rule.severity.clone(),description:rule.description.into(),path:Some(path.clone())});}}
         scan_obfuscation(&content,&path,&mut findings);
     }
+    behavior::correlate(&mut findings);
     let score=calculate_score(&findings);let risk_level=risk_from_score(score);
     Ok(ScanReport{package:package.into(),version:version.into(),score,risk_level,files_scanned,findings})
 }
