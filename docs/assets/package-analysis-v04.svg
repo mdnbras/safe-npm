@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="690" viewBox="0 0 1200 690">
+<rect width="1200" height="690" rx="24" fill="#0b0f14"/>
+<rect x="28" y="28" width="1144" height="634" rx="16" fill="#111820" stroke="#26313d"/>
+<circle cx="58" cy="58" r="7" fill="#ff5f57"/><circle cx="82" cy="58" r="7" fill="#febc2e"/><circle cx="106" cy="58" r="7" fill="#28c840"/>
+<text x="140" y="64" fill="#9ba7b4" font-family="monospace" font-size="18">safe-npm v0.4 | package calibration</text>
+<text x="58" y="112" fill="#7ee787" font-family="monospace" font-size="18">$ safe-npm tree &lt;package&gt; --json</text>
+<text x="58" y="154" fill="#dce3ea" font-family="monospace" font-size="17">PACKAGE       VERSION   PKGS   FILES   FINDINGS   RESULT</text>
+<text x="58" y="190" fill="#dce3ea" font-family="monospace" font-size="17">lodash        4.18.1       1    1049        82   CRITICAL</text>
+<text x="58" y="226" fill="#dce3ea" font-family="monospace" font-size="17">express       5.2.1       68     341       110   CRITICAL</text>
+<text x="58" y="262" fill="#dce3ea" font-family="monospace" font-size="17">react         19.3.0       1      25        30   CRITICAL</text>
+<text x="58" y="298" fill="#dce3ea" font-family="monospace" font-size="17">axios         1.20.0      30     290       101   CRITICAL</text>
+<text x="58" y="334" fill="#dce3ea" font-family="monospace" font-size="17">typescript    7.0.2       21    2387      2261   CRITICAL</text>
+<rect x="52" y="378" width="1096" height="1" fill="#26313d"/>
+<text x="58" y="422" fill="#ffb86c" font-family="monospace" font-size="18">What did this test show?</text>
+<text x="58" y="458" fill="#b7c2ce" font-family="monospace" font-size="16">The v0.4 rules are intentionally heuristic and currently produce false positives.</text>
+<text x="58" y="488" fill="#b7c2ce" font-family="monospace" font-size="16">CRITICAL is a review signal. It is not a malware verdict.</text>
+<text x="58" y="528" fill="#8b98a5" font-family="monospace" font-size="15">Most frequent signal: network-access. This baseline is being used to tune precision.</text>
+<text x="58" y="584" fill="#7ee787" font-family="monospace" font-size="16">Reproducible with .github/workflows/package-examples.yml</text>
+<text x="58" y="620" fill="#687684" font-family="monospace" font-size="14">safe-npm | See the package before it executes.</text>
+</svg>
