@@ -1,4 +1,5 @@
 use crate::registry::RegistrySignals;
+use crate::behavior;
 use anyhow::{Context, Result};
 use flate2::read::GzDecoder;
 use regex::Regex;
