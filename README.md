@@ -13,7 +13,7 @@ v0.5 addresses the false positives exposed by the real-package calibration.
 - **Rule-deduplicated scoring:** repeated occurrences of the same rule no longer multiply the package score.
 - **Context evidence:** findings keep a small source excerpt around the matched behavior.
 - **More specific static rules:** generic URLs are no longer sufficient to represent network access, and process execution focuses on concrete execution APIs.
-- **Optional OpenAI validation:** pass `--ai` and set `OPENAI_API_KEY` to review HIGH/CRITICAL findings using their local context.
+- **Optional OpenAI validation:** pass `--ai` and set `OPENAI_API_KEY` to review MEDIUM/HIGH/CRITICAL findings using their local context.
 - **AI is not required:** without `--ai`, no source context is sent to OpenAI and safe-npm remains local-first.
 - AI findings marked `false_positive` with confidence >= 0.80 are excluded before the package risk is recalculated.
 - The default AI model is `gpt-5.6-luna`; override it with `--ai-model`.
@@ -27,7 +27,7 @@ safe-npm --ai --ai-model gpt-5.6-luna tree axios
 
 ### Privacy and cost
 
-AI validation sends the rule name, file path and a short source excerpt for HIGH/CRITICAL findings to the OpenAI Responses API. It does not upload the complete package by design. Enabling `--ai` can incur OpenAI API charges and requires network access. Review your organization's source-code and data-handling policies before enabling it.
+AI validation sends the rule name, file path and a short source excerpt for MEDIUM/HIGH/CRITICAL findings to the OpenAI Responses API. It does not upload the complete package by design. Enabling `--ai` can incur OpenAI API charges and requires network access. Review your organization's source-code and data-handling policies before enabling it.
 
 ## v0.4 highlights
 
