@@ -1,0 +1,14 @@
+# safe-npm v0.4 policy
+block_at = "HIGH"
+max_depth = 8
+max_packages = 500
+
+# Block these rules regardless of the package's total score.
+deny_rules = [
+  "credential-access",
+  "behavior-secret-exfiltration",
+  "behavior-download-execute"
+]
+
+# Exact package names trusted by your organization.
+allow_packages = []
