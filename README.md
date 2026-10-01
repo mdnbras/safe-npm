@@ -1,5 +1,7 @@
 # safe-npm
 
+**English** | [Português (Brasil)](README-pt-BR.md)
+
 **See the package before it executes.** safe-npm is a local-first static security scanner for npm packages, written in Rust.
 
 > v0.4 combines behavioral correlation, configurable policy, SARIF, static source scanning, transitive dependency analysis and npm Registry intelligence **before package execution**.
