@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#061224"/><stop offset="1" stop-color="#15102b"/></linearGradient><linearGradient id="blue"><stop stop-color="#20d5ff"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs>
+<rect width="1200" height="630" fill="url(#bg)"/>
+<rect x="58" y="58" width="142" height="142" rx="28" fill="none" stroke="#27b9ff" stroke-width="8"/>
+<path d="M92 112l37-22 37 22-37 23z" fill="#2ebcff"/><path d="M92 119l34 21v39l-34-20z" fill="#2563eb"/><path d="M166 119l-34 21v39l34-20z" fill="#20d5ff"/>
+<text x="235" y="145" font-family="Arial,sans-serif" font-size="78" font-weight="700" fill="white">safe-<tspan fill="#29b6ff">npm</tspan></text>
+<text x="64" y="285" font-family="Arial,sans-serif" font-size="48" font-weight="700" fill="white">Confira o pacote.</text>
+<text x="64" y="345" font-family="Arial,sans-serif" font-size="48" font-weight="700" fill="#2ecbff">Antes de instalar.</text>
+<text x="66" y="410" font-family="Arial,sans-serif" font-size="27" fill="#c8d7ed">Análise estática, detecção comportamental</text>
+<text x="66" y="448" font-family="Arial,sans-serif" font-size="27" fill="#c8d7ed">e contexto por IA para reduzir falsos positivos.</text>
+<rect x="675" y="150" width="465" height="320" rx="22" fill="#081b37" stroke="#287bd8" stroke-width="3"/>
+<circle cx="710" cy="180" r="7" fill="#ff5964"/><circle cx="735" cy="180" r="7" fill="#ffb84d"/><circle cx="760" cy="180" r="7" fill="#3ddc84"/>
+<text x="710" y="235" font-family="monospace" font-size="22" fill="white">$ safe-npm --ai scan lodash</text>
+<text x="710" y="290" font-family="monospace" font-size="21" fill="#3ddc84">✓ analisando código...</text>
+<text x="710" y="335" font-family="monospace" font-size="21" fill="#3ddc84">✓ validando contexto com IA...</text>
+<text x="710" y="400" font-family="monospace" font-size="23" fill="#2ecbff">Fewer false positives</text>
+<text x="65" y="560" font-family="monospace" font-size="21" fill="#7ca5d8">OPEN SOURCE  •  RUST  •  NPM SUPPLY CHAIN SECURITY</text>
+</svg>
