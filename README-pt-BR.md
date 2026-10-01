@@ -62,6 +62,14 @@ Quando a IA é habilitada, o safe-npm envia para a Responses API da OpenAI o nom
 
 ## Instalação
 
+Binários prontos são publicados em cada release do GitHub:
+
+- Linux x86_64: `safe-npm-linux-x86_64.tar.gz`
+- Windows x86_64: `safe-npm-windows-x86_64.zip`
+- macOS Universal (Intel + Apple Silicon): `safe-npm-macos-universal.tar.gz`
+
+Também é possível instalar diretamente pelo código-fonte:
+
 ```bash
 cargo install --git https://github.com/mdnbras/safe-npm
 ```
