@@ -37,12 +37,12 @@ pub fn scan_dependency_tree(spec: &str, options: TreeOptions) -> Result<TreeRepo
 
         let dependencies=artifact.dependencies.clone();
         match registry.download(&artifact)
-            .and_then(|b|scanner::scan_tarball(&artifact.name,&artifact.version,&b)) {
+            .and_then(|b|scanner::scan_tarball_with_signals(&artifact.name,&artifact.version,&b,Some(&artifact.signals))) {
             Ok(report)=>{
                 packages.push(PackageNode{depth,requested:requested.clone(),report});
                 if depth<options.max_depth {
                     for (name,range) in dependencies {
-                        // npm aliases, git/file/http dependencies are deliberately not fetched in v0.2.
+                        // npm aliases, git/file/http dependencies are deliberately not fetched.
                         if range.starts_with("git") || range.starts_with("file:") || range.starts_with("http") {
                             errors.push(format!("{name}@{range}: unsupported dependency source"));
                             continue;
