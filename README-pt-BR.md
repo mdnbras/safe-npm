@@ -13,7 +13,7 @@ A v0.5 foi criada para atacar os falsos positivos encontrados durante a calibra�
 - **Score deduplicado por regra:** repetir a mesma regra centenas ou milhares de vezes não multiplica mais o score do pacote.
 - **Evidência contextual:** cada finding mantém um pequeno trecho do código em torno do comportamento encontrado.
 - **Regras estáticas mais específicas:** uma URL isolada não é mais suficiente para indicar acesso à rede e a execução de processos prioriza APIs concretas.
-- **Validação opcional com OpenAI:** use `--ai` com `OPENAI_API_KEY` para revisar findings HIGH/CRITICAL considerando o contexto do código.
+- **Validação opcional com OpenAI:** use `--ai` com `OPENAI_API_KEY` para revisar findings MEDIUM/HIGH/CRITICAL considerando o contexto do código.
 - **IA não é obrigatória:** sem `--ai`, nenhum trecho de código é enviado para a OpenAI e o safe-npm continua local-first.
 - Findings classificados como `false_positive` pela IA com confiança >= 0,80 são retirados antes do recálculo do risco.
 - O modelo padrão é `gpt-5.6-luna`, podendo ser alterado com `--ai-model`.
@@ -27,7 +27,7 @@ safe-npm --ai --ai-model gpt-5.6-luna tree axios
 
 ### Privacidade e custo
 
-Quando a IA é habilitada, o safe-npm envia para a Responses API da OpenAI o nome da regra, o caminho do arquivo e um pequeno trecho do código referente aos findings HIGH/CRITICAL. O pacote completo não é enviado por padrão. O uso de `--ai` requer acesso à internet, pode gerar custos de API e deve respeitar as políticas de código-fonte e dados da sua organização.
+Quando a IA é habilitada, o safe-npm envia para a Responses API da OpenAI o nome da regra, o caminho do arquivo e um pequeno trecho do código referente aos findings MEDIUM/HIGH/CRITICAL. O pacote completo não é enviado por padrão. O uso de `--ai` requer acesso à internet, pode gerar custos de API e deve respeitar as políticas de código-fonte e dados da sua organização.
 
 ## Destaques da v0.4
 
