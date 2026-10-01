@@ -4,8 +4,8 @@
 <link rel="stylesheet" href="style.css"></head><body>
 <nav><a class="brand" href="#">safe-npm<span>.</span></a><div><a href="#como">Como funciona</a><a href="#detecta">Detecções</a><a class="button ghost" href="https://github.com/mdnbras/safe-npm">GitHub</a></div></nav>
 <main>
-<section class="hero"><div class="eyebrow">OPEN SOURCE · RUST · SUPPLY CHAIN SECURITY</div><h1>Veja o pacote.<br><em>Antes que ele execute.</em></h1>
-<p class="lead">O safe-npm inspeciona o código de pacotes npm e toda a árvore de dependências antes da instalação — sem executar o pacote.</p>
+<section class="hero"><div class="eyebrow">V0.3 · OPEN SOURCE · RUST · SUPPLY CHAIN SECURITY</div><h1>Veja o pacote.<br><em>Antes que ele execute.</em></h1>
+<p class="lead">O safe-npm inspeciona código, metadados do Registry e toda a árvore de dependências antes da instalação — sem executar o pacote.</p>
 <div class="actions"><a class="button" href="https://github.com/mdnbras/safe-npm">Ver no GitHub →</a><a href="#start">Começar agora</a></div>
 <div class="terminal"><div class="dots">● ● ● <b>safe-npm</b></div><pre><span>$</span> safe-npm tree suspicious-package
 Root: suspicious-package@1.4.2
@@ -24,7 +24,7 @@ Packages: 47   Files: 1,284   Risk: <strong>HIGH</strong>
 <div class="steps"><article><i>01</i><h3>Resolve</h3><p>Consulta metadados do npm Registry e resolve versões e ranges SemVer.</p></article><article><i>02</i><h3>Baixa</h3><p>Obtém cada tarball da árvore sem executar código do pacote.</p></article><article><i>03</i><h3>Analisa</h3><p>Inspeciona package.json, JavaScript e TypeScript em memória.</p></article><article><i>04</i><h3>Decide</h3><p>Gera score de risco e bloqueia HIGH/CRITICAL antes da instalação.</p></article></div></section>
 
 <section id="detecta"><div class="section-tag">O QUE ELE PROCURA</div><h2>Sinais que merecem sua atenção.</h2>
-<div class="grid"><article><b>Lifecycle scripts</b><p>preinstall, install, postinstall e prepare.</p></article><article><b>Execução de processos</b><p>child_process, exec, spawn, shells e comandos.</p></article><article><b>Credenciais</b><p>.npmrc, .ssh, tokens npm/GitHub e secrets AWS.</p></article><article><b>Código dinâmico</b><p>eval, new Function e padrões de execução dinâmica.</p></article><article><b>Rede</b><p>APIs e indicadores de conexões externas.</p></article><article><b>Ofuscação</b><p>Base64 e padrões comuns de payload codificado.</p></article></div></section>
+<div class="grid"><article><b>Lifecycle scripts</b><p>preinstall, install, postinstall e prepare.</p></article><article><b>Execução de processos</b><p>child_process, exec, spawn, shells e comandos.</p></article><article><b>Credenciais</b><p>.npmrc, .ssh, tokens npm/GitHub e secrets AWS.</p></article><article><b>Código dinâmico</b><p>eval, new Function e padrões de execução dinâmica.</p></article><article><b>Rede</b><p>APIs e indicadores de conexões externas.</p></article><article><b>Ofuscação</b><p>Base64, escapes hex/unicode e densidade anormal de código.</p></article><article><b>Typosquatting</b><p>Nomes muito próximos de pacotes npm populares.</p></article><article><b>Registry intelligence</b><p>Depreciação, mantenedores ausentes e histórico muito curto.</p></article></div></section>
 
 <section id="start" class="start"><div><div class="section-tag">COMECE AGORA</div><h2>Um comando entre você<br>e a próxima dependência.</h2></div><pre><span>$</span> cargo install --git https://github.com/mdnbras/safe-npm
 <span>$</span> safe-npm tree express
