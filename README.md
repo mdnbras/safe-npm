@@ -2,9 +2,17 @@
 
 **See the package before it executes.** safe-npm is a local-first static security scanner for npm packages, written in Rust.
 
-> v0.3 combines static source scanning, transitive dependency analysis and npm Registry intelligence **before package execution**.
+> v0.4 combines behavioral correlation, configurable policy, SARIF, static source scanning, transitive dependency analysis and npm Registry intelligence **before package execution**.
 
-## v0.3 highlights
+## v0.4 highlights
+
+- **Behavior correlation:** escalates credential/environment + network and network + execution combinations to CRITICAL.
+- **Project policy:** optional `.safe-npm.toml` controls `block_at`, denied rules, exact package allowlist and traversal limits.
+- **SARIF 2.1.0:** `safe-npm tree express --sarif` for GitHub Code Scanning and other SARIF consumers.
+- Policy is enforced by `scan` and `install`; tree traversal honors policy limits.
+- Fixes the v0.3 strict-clippy CI failures.
+
+## v0.3 intelligence
 
 - **Typosquatting heuristic:** flags names one edit away from a curated set of popular npm packages.
 - **Registry trust signals:** deprecated versions, missing maintainers and extremely short version history.
@@ -113,7 +121,7 @@ If Pages is configured to use **GitHub Actions** as its source, pushes affecting
 
 ## Security boundaries
 
-safe-npm v0.3 deliberately does not execute downloaded packages. Individual source files larger than 2 MiB are skipped. Tree traversal is bounded by depth and package count. Git, local-file and direct HTTP dependency sources are currently reported as unsupported rather than fetched.
+safe-npm v0.4 deliberately does not execute downloaded packages. Individual source files larger than 2 MiB are skipped. Tree traversal is bounded by depth and package count. Git, local-file and direct HTTP dependency sources are currently reported as unsupported rather than fetched.
 
 The scanner is heuristic: **a finding is not proof of malware, and a clean report is not proof of safety.** Use safe-npm as one defense-in-depth layer alongside npm audit, provenance/signature verification, lockfiles, review and runtime isolation.
 
@@ -127,6 +135,24 @@ The scanner is heuristic: **a finding is not proof of malware, and a clean repor
 - Configurable policies and allowlists.
 - SARIF / GitHub Code Scanning.
 - Parallel downloads/scanning and metadata cache.
+
+## Policy
+
+Create `.safe-npm.toml` in the project root or pass `--policy path/to/policy.toml`:
+
+```toml
+block_at = "HIGH"
+max_depth = 8
+max_packages = 500
+deny_rules = ["credential-access", "behavior-secret-exfiltration", "behavior-download-execute"]
+allow_packages = []
+```
+
+Generate SARIF:
+
+```bash
+safe-npm tree express --sarif > safe-npm.sarif
+```
 
 ## Development
 
