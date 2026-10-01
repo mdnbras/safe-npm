@@ -1,5 +1,9 @@
 # safe-npm
 
+<p align="center">
+  <img src="docs/assets/safe-npm-social-preview.svg" alt="safe-npm - scan npm packages before installation" width="100%">
+</p>
+
 **English** | [Português (Brasil)](README-pt-BR.md)
 
 **See the package before it executes.** safe-npm is a local-first static security scanner for npm packages, written in Rust.
@@ -219,6 +223,12 @@ cargo build --release
 ## Contributing
 
 Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow, testing requirements and security-specific review guidelines. Pull requests are automatically reviewed by CodeRabbit when the GitHub App is enabled for this repository.
+
+## Community and security
+
+- [Contributing](CONTRIBUTING.md)
+- [Security Policy](SECURITY.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
 
 ## License
 
