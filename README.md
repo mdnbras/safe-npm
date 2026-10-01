@@ -4,7 +4,30 @@
 
 **See the package before it executes.** safe-npm is a local-first static security scanner for npm packages, written in Rust.
 
-> v0.4 combines behavioral correlation, configurable policy, SARIF, static source scanning, transitive dependency analysis and npm Registry intelligence **before package execution**.
+> v0.5 adds contextual evidence, false-positive resistant scoring and optional OpenAI validation on top of the local static scanner. Package code is never executed by safe-npm.
+
+## v0.5: context-aware analysis + optional AI validation
+
+v0.5 addresses the false positives exposed by the real-package calibration.
+
+- **Rule-deduplicated scoring:** repeated occurrences of the same rule no longer multiply the package score.
+- **Context evidence:** findings keep a small source excerpt around the matched behavior.
+- **More specific static rules:** generic URLs are no longer sufficient to represent network access, and process execution focuses on concrete execution APIs.
+- **Optional OpenAI validation:** pass `--ai` and set `OPENAI_API_KEY` to review HIGH/CRITICAL findings using their local context.
+- **AI is not required:** without `--ai`, no source context is sent to OpenAI and safe-npm remains local-first.
+- AI findings marked `false_positive` with confidence >= 0.80 are excluded before the package risk is recalculated.
+- The default AI model is `gpt-5.6-luna`; override it with `--ai-model`.
+
+```bash
+export OPENAI_API_KEY="your-key"
+safe-npm --ai scan lodash
+safe-npm --ai tree express
+safe-npm --ai --ai-model gpt-5.6-luna tree axios
+```
+
+### Privacy and cost
+
+AI validation sends the rule name, file path and a short source excerpt for HIGH/CRITICAL findings to the OpenAI Responses API. It does not upload the complete package by design. Enabling `--ai` can incur OpenAI API charges and requires network access. Review your organization's source-code and data-handling policies before enabling it.
 
 ## v0.4 highlights
 
@@ -159,7 +182,7 @@ If Pages is configured to use **GitHub Actions** as its source, pushes affecting
 
 ## Security boundaries
 
-safe-npm v0.4 deliberately does not execute downloaded packages. Individual source files larger than 2 MiB are skipped. Tree traversal is bounded by depth and package count. Git, local-file and direct HTTP dependency sources are currently reported as unsupported rather than fetched.
+safe-npm v0.5 deliberately does not execute downloaded packages. Individual source files larger than 2 MiB are skipped. Tree traversal is bounded by depth and package count. Git, local-file and direct HTTP dependency sources are currently reported as unsupported rather than fetched.
 
 The scanner is heuristic: **a finding is not proof of malware, and a clean report is not proof of safety.** Use safe-npm as one defense-in-depth layer alongside npm audit, provenance/signature verification, lockfiles, review and runtime isolation.
 
