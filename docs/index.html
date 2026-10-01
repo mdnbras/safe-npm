@@ -23,6 +23,12 @@ Packages: 47   Files: 1,284   Risk: <strong>HIGH</strong>
 <section id="como"><div class="section-tag">COMO FUNCIONA</div><h2>Analise antes de rodar <code>npm install</code>.</h2>
 <div class="steps"><article><i>01</i><h3>Resolve</h3><p>Consulta o npm Registry para identificar a versão correta do pacote e suas dependências.</p></article><article><i>02</i><h3>Baixa</h3><p>Baixa os pacotes que precisam ser analisados sem executar scripts de instalação.</p></article><article><i>03</i><h3>Analisa</h3><p>Verifica package.json, arquivos JavaScript e TypeScript em busca de comportamentos suspeitos.</p></article><article><i>04</i><h3>Decide</h3><p>Mostra o nível de risco encontrado e pode impedir a instalação quando o risco for alto.</p></article></div></section>
 
+<section id="ai"><div class="section-tag">NOVO NA V0.5</div><h2>Contexto local primeiro. IA quando você quiser.</h2>
+<div class="grid"><article><b>Menos falsos positivos</b><p>O score não cresce mais só porque a mesma regra apareceu centenas de vezes no pacote.</p></article><article><b>Evidência contextual</b><p>O scanner guarda um pequeno trecho ao redor do comportamento encontrado para ajudar na revisão.</p></article><article><b>Validação com OpenAI</b><p>Com <code>--ai</code>, findings HIGH e CRITICAL podem ser revisados considerando o contexto do código.</p></article><article><b>Opt-in</b><p>Sem <code>--ai</code>, nenhum trecho de código é enviado para a OpenAI. A análise local continua sendo o padrão.</p></article></div>
+<pre><span>$</span> export OPENAI_API_KEY="sua-chave"
+<span>$</span> safe-npm --ai tree express
+<span>$</span> safe-npm --ai --ai-model gpt-5.6-luna scan lodash</pre></section>
+
 <section id="detecta"><div class="section-tag">O QUE ELE PROCURA</div><h2>O que o safe-npm verifica.</h2>
 <div class="grid"><article><b>Lifecycle scripts</b><p>preinstall, install, postinstall e prepare.</p></article><article><b>Execução de processos</b><p>child_process, exec, spawn, shells e comandos.</p></article><article><b>Credenciais</b><p>.npmrc, .ssh, tokens npm/GitHub e secrets AWS.</p></article><article><b>Código dinâmico</b><p>eval, new Function e padrões de execução dinâmica.</p></article><article><b>Rede</b><p>APIs e indicadores de conexões externas.</p></article><article><b>Ofuscação</b><p>Base64, escapes hex/unicode e densidade anormal de código.</p></article><article><b>Typosquatting</b><p>Nomes muito próximos de pacotes npm populares.</p></article><article><b>Registry intelligence</b><p>Depreciação, mantenedores ausentes e histórico muito curto.</p></article><article><b>Correlação comportamental</b><p>Cruza sinais como acesso a credenciais, chamadas de rede e execução de comandos.</p></article><article><b>Policy + SARIF</b><p>Permite definir regras por projeto e gerar relatórios SARIF para uso no CI.</p></article></div></section>
 
@@ -30,6 +36,6 @@ Packages: 47   Files: 1,284   Risk: <strong>HIGH</strong>
 <span>$</span> safe-npm tree express
 <span>$</span> safe-npm install express</pre></section>
 
-<section class="note"><h2>O scanner ajuda, mas não substitui uma revisão de segurança.</h2><p>O safe-npm trabalha com análise estática e heurísticas. Um alerta indica algo que vale a pena revisar, mas não significa automaticamente que o pacote contém malware. Da mesma forma, um resultado sem alertas não garante que o pacote seja seguro. Use a ferramenta junto com npm audit, provenance, assinaturas e revisão de código.</p></section>
+<section class="note"><h2>O scanner ajuda, mas não substitui uma revisão de segurança.</h2><p>O safe-npm combina análise estática, heurísticas contextuais e, opcionalmente, validação por IA. Um alerta indica algo que vale a pena revisar, mas não significa automaticamente que o pacote contém malware. Da mesma forma, um resultado sem alertas não garante que o pacote seja seguro. Use a ferramenta junto com npm audit, provenance, assinaturas e revisão de código.</p></section>
 </main><footer><a class="brand" href="#">safe-npm<span>.</span></a><p>Open source · MIT · Feito em Rust</p><a href="https://github.com/mdnbras/safe-npm">github.com/mdnbras/safe-npm</a></footer>
 </body></html>
