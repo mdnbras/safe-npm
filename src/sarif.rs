@@ -1,7 +1,7 @@
 use crate::tree::TreeReport;
 use serde_json::{json, Value};
 
-pub fn from_tree(report:&TreeReport)->Value{
+pub fn from_tree(report: &TreeReport) -> Value {
     let results:Vec<Value>=report.packages.iter().flat_map(|node|{
         node.report.findings.iter().map(move |f|{
             let level=match f.severity{crate::scanner::Severity::Low=>"note",crate::scanner::Severity::Medium=>"warning",_=>"error"};

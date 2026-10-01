@@ -5,10 +5,17 @@ use serde::Serialize;
 use std::collections::{HashSet, VecDeque};
 
 #[derive(Clone, Copy)]
-pub struct TreeOptions { pub max_depth: usize, pub max_packages: usize }
+pub struct TreeOptions {
+    pub max_depth: usize,
+    pub max_packages: usize,
+}
 
 #[derive(Debug, Serialize)]
-pub struct PackageNode { pub depth: usize, pub requested: String, pub report: ScanReport }
+pub struct PackageNode {
+    pub depth: usize,
+    pub requested: String,
+    pub report: ScanReport,
+}
 
 #[derive(Debug, Serialize)]
 pub struct TreeReport {
@@ -21,56 +28,105 @@ pub struct TreeReport {
 }
 
 pub fn scan_dependency_tree(spec: &str, options: TreeOptions) -> Result<TreeReport> {
-    let registry=RegistryClient::new()?;
-    let mut queue=VecDeque::from([(spec.to_owned(),0usize)]);
-    let mut seen=HashSet::new();
-    let mut packages=Vec::new();
-    let mut errors=Vec::new();
+    let registry = RegistryClient::new()?;
+    let mut queue = VecDeque::from([(spec.to_owned(), 0usize)]);
+    let mut seen = HashSet::new();
+    let mut packages = Vec::new();
+    let mut errors = Vec::new();
 
-    while let Some((requested,depth))=queue.pop_front() {
-        if depth>options.max_depth || packages.len()>=options.max_packages { continue; }
-        let artifact=match registry.resolve(&requested) {
-            Ok(v)=>v, Err(e)=>{errors.push(format!("{requested}: {e:#}"));continue;}
+    while let Some((requested, depth)) = queue.pop_front() {
+        if depth > options.max_depth || packages.len() >= options.max_packages {
+            continue;
+        }
+        let artifact = match registry.resolve(&requested) {
+            Ok(v) => v,
+            Err(e) => {
+                errors.push(format!("{requested}: {e:#}"));
+                continue;
+            }
         };
-        let key=format!("{}@{}",artifact.name,artifact.version);
-        if !seen.insert(key){continue;}
+        let key = format!("{}@{}", artifact.name, artifact.version);
+        if !seen.insert(key) {
+            continue;
+        }
 
-        let dependencies=artifact.dependencies.clone();
-        match registry.download(&artifact)
-            .and_then(|b|scanner::scan_tarball_with_signals(&artifact.name,&artifact.version,&b,Some(&artifact.signals))) {
-            Ok(report)=>{
-                packages.push(PackageNode{depth,requested:requested.clone(),report});
-                if depth<options.max_depth {
-                    for (name,range) in dependencies {
+        let dependencies = artifact.dependencies.clone();
+        match registry.download(&artifact).and_then(|b| {
+            scanner::scan_tarball_with_signals(
+                &artifact.name,
+                &artifact.version,
+                &b,
+                Some(&artifact.signals),
+            )
+        }) {
+            Ok(report) => {
+                packages.push(PackageNode {
+                    depth,
+                    requested: requested.clone(),
+                    report,
+                });
+                if depth < options.max_depth {
+                    for (name, range) in dependencies {
                         // npm aliases, git/file/http dependencies are deliberately not fetched.
-                        if range.starts_with("git") || range.starts_with("file:") || range.starts_with("http") {
+                        if range.starts_with("git")
+                            || range.starts_with("file:")
+                            || range.starts_with("http")
+                        {
                             errors.push(format!("{name}@{range}: unsupported dependency source"));
                             continue;
                         }
-                        let spec=if range.starts_with("npm:") {
+                        let spec = if range.starts_with("npm:") {
                             range.trim_start_matches("npm:").to_owned()
-                        } else { format!("{name}@{range}") };
-                        queue.push_back((spec,depth+1));
+                        } else {
+                            format!("{name}@{range}")
+                        };
+                        queue.push_back((spec, depth + 1));
                     }
                 }
             }
-            Err(e)=>errors.push(format!("{}@{}: {e:#}",artifact.name,artifact.version)),
+            Err(e) => errors.push(format!("{}@{}: {e:#}", artifact.name, artifact.version)),
         }
     }
 
-    let root=packages.first().map(|p|p.report.clone())
-        .ok_or_else(||anyhow::anyhow!("root package could not be scanned"))?;
-    let risk_level=packages.iter().map(|p|p.report.risk_level.clone())
-        .max_by_key(risk_rank).unwrap_or(RiskLevel::Low);
-    let files_scanned=packages.iter().map(|p|p.report.files_scanned).sum();
-    Ok(TreeReport{root,risk_level,packages_scanned:packages.len(),files_scanned,packages,errors})
+    let root = packages
+        .first()
+        .map(|p| p.report.clone())
+        .ok_or_else(|| anyhow::anyhow!("root package could not be scanned"))?;
+    let risk_level = packages
+        .iter()
+        .map(|p| p.report.risk_level.clone())
+        .max_by_key(risk_rank)
+        .unwrap_or(RiskLevel::Low);
+    let files_scanned = packages.iter().map(|p| p.report.files_scanned).sum();
+    Ok(TreeReport {
+        root,
+        risk_level,
+        packages_scanned: packages.len(),
+        files_scanned,
+        packages,
+        errors,
+    })
 }
 
-pub fn recalculate(report:&mut TreeReport){
-    report.root=report.packages.first().map(|p|p.report.clone()).unwrap_or_else(||report.root.clone());
-    report.risk_level=report.packages.iter().map(|p|p.report.risk_level.clone()).max_by_key(risk_rank).unwrap_or(RiskLevel::Low);
-    report.files_scanned=report.packages.iter().map(|p|p.report.files_scanned).sum();
+pub fn recalculate(report: &mut TreeReport) {
+    report.root = report
+        .packages
+        .first()
+        .map(|p| p.report.clone())
+        .unwrap_or_else(|| report.root.clone());
+    report.risk_level = report
+        .packages
+        .iter()
+        .map(|p| p.report.risk_level.clone())
+        .max_by_key(risk_rank)
+        .unwrap_or(RiskLevel::Low);
+    report.files_scanned = report.packages.iter().map(|p| p.report.files_scanned).sum();
 }
-fn risk_rank(level:&RiskLevel)->u8 {
-    match level { RiskLevel::Low=>0,RiskLevel::Medium=>1,RiskLevel::High=>2,RiskLevel::Critical=>3 }
+fn risk_rank(level: &RiskLevel) -> u8 {
+    match level {
+        RiskLevel::Low => 0,
+        RiskLevel::Medium => 1,
+        RiskLevel::High => 2,
+        RiskLevel::Critical => 3,
+    }
 }
