@@ -1,5 +1,3 @@
-# safe-npm
-
 <p align="center">
   <img src="docs/assets/safe-npm-social-preview.svg" alt="safe-npm - scan npm packages before installation" width="100%">
 </p>
