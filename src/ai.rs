@@ -34,7 +34,7 @@ pub fn validate_findings(findings: &mut [Finding], model: &str) -> Result<()> {
             "model": model,
             "instructions": "You are validating a static-analysis finding in an npm package. Decide whether the evidence supports a real security-relevant behavior or is likely a false positive. Do not assume malware. Return compact JSON only: {\"verdict\":\"confirmed|false_positive|uncertain\",\"confidence\":0.0,\"reason\":\"...\"}.",
             "input": input,
-            "max_output_tokens": 180
+            "max_output_tokens": 400
         });
         let response: Value = client.post("https://api.openai.com/v1/responses")
             .bearer_auth(&key).json(&body).send().context("OpenAI request failed")?
@@ -43,7 +43,14 @@ pub fn validate_findings(findings: &mut [Finding], model: &str) -> Result<()> {
             .and_then(|o| o.iter().find_map(|item| item.get("content")?.as_array()?.iter()
                 .find_map(|c| c.get("text")?.as_str()))).context("OpenAI response did not contain text")?;
         let clean=text.trim().trim_start_matches("```json").trim_start_matches("```").trim_end_matches("```").trim();
-        let validation:AiValidation=serde_json::from_str(clean).context("invalid AI validation JSON")?;
+        let validation = match serde_json::from_str::<AiValidation>(clean) {
+            Ok(validation) => validation,
+            Err(err) => AiValidation {
+                verdict: "uncertain".into(),
+                confidence: 0.0,
+                reason: format!("OpenAI returned an invalid or incomplete validation response: {err}"),
+            },
+        };
         finding.ai_validation=Some(validation);
     }
     Ok(())
