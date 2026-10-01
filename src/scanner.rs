@@ -35,9 +35,6 @@ fn rules()->Vec<Rule>{vec![
     Rule{id:"encoded-payload",severity:Severity::Medium,description:"Possible encoded/obfuscated payload detected.",regex:Regex::new(r#"(?i)(fromCharCode\s*\(|Buffer\.from\s*\([^\n]{0,200}base64|atob\s*\()"#).unwrap()},
 ]}
 
-pub fn scan_tarball(package:&str,version:&str,bytes:&[u8])->Result<ScanReport>{
-    scan_tarball_with_signals(package,version,bytes,None)
-}
 pub fn scan_tarball_with_signals(package:&str,version:&str,bytes:&[u8],signals:Option<&RegistrySignals>)->Result<ScanReport>{
     let decoder=GzDecoder::new(bytes);let mut archive=Archive::new(decoder);let rules=rules();
     let mut findings=metadata_findings(package,signals);let mut files_scanned=0usize;
