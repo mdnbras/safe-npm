@@ -1,0 +1,48 @@
+language: "en-US"
+
+reviews:
+  profile: "assertive"
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+
+  auto_review:
+    enabled: true
+    drafts: false
+
+  path_instructions:
+    - path: "src/**/*.rs"
+      instructions: |
+        This is a security scanner. Prioritize correctness, false-positive/false-negative regressions,
+        safe error handling, bounded resource usage, and deterministic behavior.
+        Flag code that executes downloaded npm package code or installation scripts during scanning.
+        Check that new Finding constructors initialize all contextual and AI fields.
+        For AI validation, preserve findings when the model response is missing, malformed, uncertain,
+        or unavailable. AI must not silently turn an uncertain result into a safe verdict.
+        Never suggest logging API keys, tokens, package secrets, or sensitive source excerpts.
+
+    - path: "src/ai.rs"
+      instructions: |
+        Review OpenAI integration defensively. Check authentication handling, HTTP errors, malformed or
+        truncated model output, privacy of submitted evidence, API cost/latency amplification, and
+        whether AI verdicts can incorrectly suppress a security finding.
+
+    - path: ".github/workflows/**"
+      instructions: |
+        Review GitHub Actions for least-privilege permissions, secret exposure, unsafe interpolation,
+        untrusted pull-request execution, supply-chain risks in third-party actions, and accidental
+        execution of owner-only workflows by other actors.
+
+    - path: "docs/**"
+      instructions: |
+        Verify documentation matches actual CLI behavior. Security claims must not imply that a clean
+        scan proves a package is safe or that a finding proves malware.
+
+    - path: "README*.md"
+      instructions: |
+        Check examples against the current CLI and version. Keep security and AI limitations explicit.
+
+chat:
+  auto_reply: true
