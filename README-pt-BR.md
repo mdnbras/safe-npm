@@ -4,7 +4,30 @@
 
 **Veja o pacote antes que ele execute.** O safe-npm é um scanner local de segurança estática para pacotes npm, escrito em Rust.
 
-> A v0.4 combina correlação comportamental, políticas configuráveis, SARIF, análise estática do código-fonte, análise de dependências transitivas e inteligência do npm Registry **antes da execução do pacote**.
+> A v0.5 adiciona evidência contextual, score mais resistente a falsos positivos e validação opcional com OpenAI sobre o scanner estático local. O safe-npm não executa o código do pacote.
+
+## v0.5: análise por contexto + validação opcional com IA
+
+A v0.5 foi criada para atacar os falsos positivos encontrados durante a calibração com pacotes reais.
+
+- **Score deduplicado por regra:** repetir a mesma regra centenas ou milhares de vezes não multiplica mais o score do pacote.
+- **Evidência contextual:** cada finding mantém um pequeno trecho do código em torno do comportamento encontrado.
+- **Regras estáticas mais específicas:** uma URL isolada não é mais suficiente para indicar acesso à rede e a execução de processos prioriza APIs concretas.
+- **Validação opcional com OpenAI:** use `--ai` com `OPENAI_API_KEY` para revisar findings HIGH/CRITICAL considerando o contexto do código.
+- **IA não é obrigatória:** sem `--ai`, nenhum trecho de código é enviado para a OpenAI e o safe-npm continua local-first.
+- Findings classificados como `false_positive` pela IA com confiança >= 0,80 são retirados antes do recálculo do risco.
+- O modelo padrão é `gpt-5.6-luna`, podendo ser alterado com `--ai-model`.
+
+```bash
+export OPENAI_API_KEY="sua-chave"
+safe-npm --ai scan lodash
+safe-npm --ai tree express
+safe-npm --ai --ai-model gpt-5.6-luna tree axios
+```
+
+### Privacidade e custo
+
+Quando a IA é habilitada, o safe-npm envia para a Responses API da OpenAI o nome da regra, o caminho do arquivo e um pequeno trecho do código referente aos findings HIGH/CRITICAL. O pacote completo não é enviado por padrão. O uso de `--ai` requer acesso à internet, pode gerar custos de API e deve respeitar as políticas de código-fonte e dados da sua organização.
 
 ## Destaques da v0.4
 
@@ -159,7 +182,7 @@ Quando o Pages está configurado para utilizar **GitHub Actions** como fonte, pu
 
 ## Limites de segurança
 
-O safe-npm v0.4 deliberadamente não executa os pacotes baixados. Arquivos individuais de código-fonte maiores que 2 MiB são ignorados. A varredura da árvore é limitada por profundidade e quantidade de pacotes. Dependências provenientes de Git, arquivos locais e HTTP direto são atualmente reportadas como não suportadas em vez de serem baixadas.
+O safe-npm v0.5 deliberadamente não executa os pacotes baixados. Arquivos individuais de código-fonte maiores que 2 MiB são ignorados. A varredura da árvore é limitada por profundidade e quantidade de pacotes. Dependências provenientes de Git, arquivos locais e HTTP direto são atualmente reportadas como não suportadas em vez de serem baixadas.
 
 O scanner é heurístico: **um finding não é prova de malware, e um relatório limpo não é prova de segurança.** Use o safe-npm como uma camada de defesa em profundidade junto com npm audit, verificação de proveniência/assinatura, lockfiles, revisão de código e isolamento em runtime.
 
