@@ -90,7 +90,7 @@ fn scan_package_json(content:&str,path:&str,findings:&mut Vec<Finding>){
 }
 
 fn levenshtein(a:&str,b:&str)->usize{
-    let mut costs:(Vec<usize>)=(0..=b.chars().count()).collect();
+    let mut costs:Vec<usize>=(0..=b.chars().count()).collect();
     for (i,ca) in a.chars().enumerate(){let mut last=i;costs[0]=i+1;for (j,cb) in b.chars().enumerate(){let old=costs[j+1];costs[j+1]=if ca==cb{last}else{1+last.min(old).min(costs[j])};last=old;}}
     costs[b.chars().count()]
 }
