@@ -216,6 +216,10 @@ cargo test --all-features
 cargo build --release
 ```
 
+## Contributing
+
+Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow, testing requirements and security-specific review guidelines. Pull requests are automatically reviewed by CodeRabbit when the GitHub App is enabled for this repository.
+
 ## License
 
 MIT
