@@ -73,7 +73,11 @@ Single tarball:
 ```bash
 safe-npm scan lodash
 safe-npm scan lodash --json
+safe-npm scan lodash --html
+safe-npm scan lodash --html reports/lodash.html
 ```
+
+HTML reports are standalone files and include the package score, risk level, severity summary, detailed findings, source evidence and AI validation when `--ai` is enabled. Running `--html` without a path writes `safe-npm-report.html`.
 
 Full production dependency tree:
 
