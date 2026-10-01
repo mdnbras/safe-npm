@@ -16,7 +16,7 @@ pub fn correlate(findings:&mut Vec<Finding>){
         }
         if network&&execution{
             findings.push(Finding{rule:"behavior-download-execute".into(),severity:Severity::Critical,
-                description:"Correlated behavior: network capability and command/dynamic execution occur in the same file.".into(),path:Some(path)});
+                description:"Correlated behavior: network capability and command/dynamic execution occur in the same file.".into(),path:Some(path),evidence:None,ai_validation:None});
         }
     }
 }
