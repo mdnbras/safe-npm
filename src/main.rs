@@ -1,3 +1,4 @@
+mod ai;
 mod behavior;
 mod policy;
 mod registry;
@@ -14,7 +15,13 @@ use tree::{TreeOptions, TreeReport};
 
 #[derive(Parser)]
 #[command(name="safe-npm", version, about="Scan npm packages before installing them")]
-struct Cli { #[command(subcommand)] command: Commands }
+struct Cli {
+    /// Validate HIGH/CRITICAL findings with OpenAI. Requires OPENAI_API_KEY.
+    #[arg(long, global=true)] ai: bool,
+    /// OpenAI model used by --ai.
+    #[arg(long, global=true, default_value="gpt-5.6-luna")] ai_model: String,
+    #[command(subcommand)] command: Commands
+}
 
 #[derive(Subcommand)]
 enum Commands {
@@ -83,22 +90,28 @@ fn color_level(level: &RiskLevel) -> colored::ColoredString {
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
+    ai::require_supported_model(&cli.ai_model)?;
+    let use_ai=cli.ai;
+    let ai_model=cli.ai_model.clone();
     match cli.command {
         Commands::Scan { package, json, policy } => {
-            let report=scan_package(&package)?;
+            let mut report=scan_package(&package)?;
+            if use_ai { ai::validate_findings(&mut report.findings,&ai_model)?; ai::apply_ai_verdicts(&mut report.findings); scanner::recalculate(&mut report); }
             let policy=policy::Policy::load(policy.as_deref())?;
             if json { println!("{}", serde_json::to_string_pretty(&report)?); } else { print_report(&report); }
             if policy.blocks(&report) { bail!("scan blocked by policy"); }
         }
         Commands::Tree { package, max_depth, max_packages, json, sarif, policy } => {
             let policy=policy::Policy::load(policy.as_deref())?;
-            let report=scan_tree(&package,max_depth.min(policy.max_depth),max_packages.min(policy.max_packages))?;
+            let mut report=scan_tree(&package,max_depth.min(policy.max_depth),max_packages.min(policy.max_packages))?;
+            if use_ai { for node in &mut report.packages { ai::validate_findings(&mut node.report.findings,&ai_model)?; ai::apply_ai_verdicts(&mut node.report.findings); scanner::recalculate(&mut node.report); } tree::recalculate(&mut report); }
             if sarif { println!("{}",serde_json::to_string_pretty(&sarif::from_tree(&report))?); }
             else if json { println!("{}",serde_json::to_string_pretty(&report)?); } else { print_tree(&report); }
         }
         Commands::Install { package, allow_risk, allow_scripts, max_depth, max_packages, policy } => {
             let policy=policy::Policy::load(policy.as_deref())?;
-            let report=scan_tree(&package,max_depth.min(policy.max_depth),max_packages.min(policy.max_packages))?;
+            let mut report=scan_tree(&package,max_depth.min(policy.max_depth),max_packages.min(policy.max_packages))?;
+            if use_ai { for node in &mut report.packages { ai::validate_findings(&mut node.report.findings,&ai_model)?; ai::apply_ai_verdicts(&mut node.report.findings); scanner::recalculate(&mut node.report); } tree::recalculate(&mut report); }
             print_tree(&report);
             if report.packages.iter().any(|n|policy.blocks(&n.report)) && !allow_risk {
                 bail!("installation blocked: dependency-tree risk is {}. Review findings or pass --allow-risk.",report.risk_level);
