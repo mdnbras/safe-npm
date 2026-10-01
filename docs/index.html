@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="style.css"></head><body>
 <nav><a class="brand" href="#">safe-npm<span>.</span></a><div><a href="#como">Como funciona</a><a href="#detecta">Detecções</a><a class="button ghost" href="https://github.com/mdnbras/safe-npm">GitHub</a></div></nav>
 <main>
-<section class="hero"><div class="eyebrow">V0.4 · OPEN SOURCE · RUST · SUPPLY CHAIN SECURITY</div><h1>Confira o pacote.<br><em>Antes de instalar.</em></h1>
+<section class="hero"><div class="eyebrow">V0.5 · OPEN SOURCE · RUST · SUPPLY CHAIN SECURITY</div><h1>Confira o pacote.<br><em>Antes de instalar.</em></h1>
 <p class="lead">Antes de instalar um pacote, o safe-npm analisa o código, consulta informações do npm Registry e verifica as dependências. Tudo isso sem executar o pacote.</p>
 <div class="actions"><a class="button" href="https://github.com/mdnbras/safe-npm">Ver no GitHub →</a><a href="#start">Começar agora</a></div>
 <div class="terminal"><div class="dots">● ● ● <b>safe-npm</b></div><pre><span>$</span> safe-npm tree suspicious-package
@@ -24,7 +24,7 @@ Packages: 47   Files: 1,284   Risk: <strong>HIGH</strong>
 <div class="steps"><article><i>01</i><h3>Resolve</h3><p>Consulta o npm Registry para identificar a versão correta do pacote e suas dependências.</p></article><article><i>02</i><h3>Baixa</h3><p>Baixa os pacotes que precisam ser analisados sem executar scripts de instalação.</p></article><article><i>03</i><h3>Analisa</h3><p>Verifica package.json, arquivos JavaScript e TypeScript em busca de comportamentos suspeitos.</p></article><article><i>04</i><h3>Decide</h3><p>Mostra o nível de risco encontrado e pode impedir a instalação quando o risco for alto.</p></article></div></section>
 
 <section id="ai"><div class="section-tag">NOVO NA V0.5</div><h2>Contexto local primeiro. IA quando você quiser.</h2>
-<div class="grid"><article><b>Menos falsos positivos</b><p>O score não cresce mais só porque a mesma regra apareceu centenas de vezes no pacote.</p></article><article><b>Evidência contextual</b><p>O scanner guarda um pequeno trecho ao redor do comportamento encontrado para ajudar na revisão.</p></article><article><b>Validação com OpenAI</b><p>Com <code>--ai</code>, findings HIGH e CRITICAL podem ser revisados considerando o contexto do código.</p></article><article><b>Opt-in</b><p>Sem <code>--ai</code>, nenhum trecho de código é enviado para a OpenAI. A análise local continua sendo o padrão.</p></article></div>
+<div class="grid"><article><b>Menos falsos positivos</b><p>O score não cresce mais só porque a mesma regra apareceu centenas de vezes no pacote.</p></article><article><b>Evidência contextual</b><p>O scanner guarda um pequeno trecho ao redor do comportamento encontrado para ajudar na revisão.</p></article><article><b>Validação com OpenAI</b><p>Com <code>--ai</code>, findings MEDIUM, HIGH e CRITICAL podem ser revisados considerando o contexto do código.</p></article><article><b>Opt-in</b><p>Sem <code>--ai</code>, nenhum trecho de código é enviado para a OpenAI. A análise local continua sendo o padrão.</p></article></div>
 <pre><span>$</span> export OPENAI_API_KEY="sua-chave"
 <span>$</span> safe-npm --ai tree express
 <span>$</span> safe-npm --ai --ai-model gpt-5.6-luna scan lodash</pre></section>
