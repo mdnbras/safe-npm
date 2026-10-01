@@ -1,5 +1,6 @@
 mod ai;
 mod behavior;
+mod html;
 mod policy;
 mod registry;
 mod sarif;
@@ -37,6 +38,9 @@ enum Commands {
         package: String,
         #[arg(long)]
         json: bool,
+        /// Generate a standalone HTML report. Optionally provide an output path.
+        #[arg(long, num_args = 0..=1, default_missing_value = "safe-npm-report.html")]
+        html: Option<String>,
         #[arg(long)]
         policy: Option<String>,
     },
@@ -170,6 +174,7 @@ fn main() -> Result<()> {
         Commands::Scan {
             package,
             json,
+            html,
             policy,
         } => {
             let mut report = scan_package(&package)?;
@@ -179,6 +184,10 @@ fn main() -> Result<()> {
                 scanner::recalculate(&mut report);
             }
             let policy = policy::Policy::load(policy.as_deref())?;
+            if let Some(path) = html.as_deref() {
+                html::write_scan_report(&report, path)?;
+                eprintln!("HTML report: {path}");
+            }
             if json {
                 println!("{}", serde_json::to_string_pretty(&report)?);
             } else {
