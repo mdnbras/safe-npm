@@ -94,40 +94,32 @@ safe-npm install package --allow-risk
 safe-npm install package --allow-scripts
 ```
 
-## Calibração com pacotes reais
+## Calibração com pacote real
 
-Para exercitar o scanner contra código do mundo real, a v0.4 foi executada contra cinco pacotes npm amplamente utilizados: `lodash`, `express`, `react`, `axios` e `typescript`. O teste foi executado em 01/10/2026 utilizando as versões resolvidas pelo npm Registry naquele momento.
+A calibração da v0.5 usa apenas o **lodash** como exemplo reproduzível. O resultado abaixo vem do workflow `AI package test` do próprio repositório, executado em 01/10/2026 com a validação por IA habilitada.
 
-Esses são exemplos de pacotes com uso massivo, e não um ranking permanente ou oficial de "top 5". A quantidade de downloads e as versões dos pacotes mudam ao longo do tempo.
-
-| Pacote | Versão | Pacotes analisados | Arquivos analisados | Findings | Risco da árvore |
+| Pacote | Versão | Arquivos analisados | Findings finais | Score | Risco |
 |---|---:|---:|---:|---:|---|
-| lodash | 4.18.1 | 1 | 1.049 | 82 | CRITICAL |
-| express | 5.2.1 | 68 | 341 | 110 | CRITICAL |
-| react | 19.3.0 | 1 | 25 | 30 | CRITICAL |
-| axios | 1.20.0 | 30 | 290 | 101 | CRITICAL |
-| typescript | 7.0.2 | 21 | 2.387 | 2.261 | CRITICAL |
+| lodash | 4.18.1 | 1.049 | 5 | 30/100 | MEDIUM |
 
-![Análise de pacotes com safe-npm](docs/assets/package-analysis-v04.svg)
+### Evidências do AI package test
 
-### O que esses resultados significam
+O relatório final manteve cinco findings. Os exemplos abaixo mostram por que o safe-npm usa a IA como evidência contextual, e não como um veredito de malware.
 
-Essa calibração revelou uma limitação importante no conjunto atual de regras. Os cinco pacotes atingiram CRITICAL, sendo `network-access` responsável pela maior parte dos findings. Por exemplo, TypeScript produziu 2.170 findings de `network-access`, enquanto lodash produziu 70.
+- **encoded-payload · `package/lodash.js` · MEDIUM**: `uncertain`, confiança **0,96**. A avaliação da IA apontou que o `String.fromCharCode(o.code)` detectado também pode ser um comportamento legítimo de uma biblioteca utilitária e que o trecho fornecido não demonstrava decodificação, ofuscação ou execução de payload suficiente para confirmar um comportamento relevante de segurança.
+- **network-access · `package/templateSettings.js` · MEDIUM**: `uncertain`, confiança **0,99**. A evidência enviada era um link para o threat model do Lodash, e não código demonstrando uma requisição de rede. Por isso a avaliação da IA não confirmou acesso à rede.
+- **obfuscation-density · 3 findings · MEDIUM**: `not_analyzed`. Esses findings não possuíam evidência contextual de código. O safe-npm os preservou no relatório em vez de pedir para a IA inferir algo sem contexto.
 
-**Essa tabela não deve ser interpretada como uma afirmação de que esses pacotes contêm malware.** O nível de risco do safe-npm é um sinal heurístico para revisão. O teste mostra que a v0.4 ainda precisa de maior compreensão de contexto e precisão nas regras antes que o score possa ser tratado como uma classificação forte de segurança de um pacote.
+O resultado não afirma que o lodash é seguro ou inseguro. Ele demonstra o fluxo da v0.5: a análise estática produz sinais para revisão, a evidência contextual é enviada ao validador opcional por IA e findings incertos ou não analisados continuam visíveis.
 
-É justamente por isso que esses exemplos permanecem no repositório: eles fornecem um baseline reproduzível para medir a redução de falsos positivos nas próximas versões.
+O resultado usado como exemplo é produzido pelo workflow manual `AI package test` e disponibilizado no artifact `lodash-ai-report`.
 
-Os relatórios JSON brutos são gerados pelo workflow `Package examples` do GitHub Actions e enviados como artifact `safe-npm-package-examples`.
-
-Execute o mesmo teste localmente:
+Execute a mesma calibração localmente:
 
 ```bash
+export OPENAI_API_KEY="sua-chave"
 cargo build --release
-
-for pkg in lodash express react axios typescript; do
-  ./target/release/safe-npm tree "$pkg" --json > "$pkg.json"
-done
+./target/release/safe-npm --ai scan lodash --json
 ```
 
 ## O que é detectado?
