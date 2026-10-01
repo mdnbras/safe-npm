@@ -1,4 +1,7 @@
+mod behavior;
+mod policy;
 mod registry;
+mod sarif;
 mod scanner;
 mod tree;
 
@@ -16,13 +19,15 @@ struct Cli { #[command(subcommand)] command: Commands }
 #[derive(Subcommand)]
 enum Commands {
     /// Scan one package tarball only.
-    Scan { package: String, #[arg(long)] json: bool },
+    Scan { package: String, #[arg(long)] json: bool, #[arg(long)] policy: Option<String> },
     /// Scan the package and its transitive production dependencies.
     Tree {
         package: String,
         #[arg(long, default_value_t=8)] max_depth: usize,
         #[arg(long, default_value_t=500)] max_packages: usize,
         #[arg(long)] json: bool,
+        #[arg(long)] sarif: bool,
+        #[arg(long)] policy: Option<String>,
     },
     /// Scan the dependency tree, then install only when policy allows it.
     Install {
@@ -31,6 +36,7 @@ enum Commands {
         #[arg(long)] allow_scripts: bool,
         #[arg(long, default_value_t=8)] max_depth: usize,
         #[arg(long, default_value_t=500)] max_packages: usize,
+        #[arg(long)] policy: Option<String>,
     },
 }
 
@@ -78,18 +84,23 @@ fn color_level(level: &RiskLevel) -> colored::ColoredString {
 fn main() -> Result<()> {
     let cli = Cli::parse();
     match cli.command {
-        Commands::Scan { package, json } => {
+        Commands::Scan { package, json, policy } => {
             let report=scan_package(&package)?;
+            let policy=policy::Policy::load(policy.as_deref())?;
             if json { println!("{}", serde_json::to_string_pretty(&report)?); } else { print_report(&report); }
+            if policy.blocks(&report) { bail!("scan blocked by policy"); }
         }
-        Commands::Tree { package, max_depth, max_packages, json } => {
-            let report=scan_tree(&package,max_depth,max_packages)?;
-            if json { println!("{}",serde_json::to_string_pretty(&report)?); } else { print_tree(&report); }
+        Commands::Tree { package, max_depth, max_packages, json, sarif, policy } => {
+            let policy=policy::Policy::load(policy.as_deref())?;
+            let report=scan_tree(&package,max_depth.min(policy.max_depth),max_packages.min(policy.max_packages))?;
+            if sarif { println!("{}",serde_json::to_string_pretty(&sarif::from_tree(&report))?); }
+            else if json { println!("{}",serde_json::to_string_pretty(&report)?); } else { print_tree(&report); }
         }
-        Commands::Install { package, allow_risk, allow_scripts, max_depth, max_packages } => {
-            let report=scan_tree(&package,max_depth,max_packages)?;
+        Commands::Install { package, allow_risk, allow_scripts, max_depth, max_packages, policy } => {
+            let policy=policy::Policy::load(policy.as_deref())?;
+            let report=scan_tree(&package,max_depth.min(policy.max_depth),max_packages.min(policy.max_packages))?;
             print_tree(&report);
-            if matches!(report.risk_level,RiskLevel::High|RiskLevel::Critical) && !allow_risk {
+            if report.packages.iter().any(|n|policy.blocks(&n.report)) && !allow_risk {
                 bail!("installation blocked: dependency-tree risk is {}. Review findings or pass --allow-risk.",report.risk_level);
             }
             let mut cmd=Command::new("npm");
