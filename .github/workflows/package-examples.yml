@@ -1,0 +1,29 @@
+name: Package examples
+on:
+  push:
+    branches: [master]
+    paths: ['.github/workflows/package-examples.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build --release
+      - name: Scan popular packages
+        shell: bash
+        run: |
+          mkdir -p benchmark-results
+          for pkg in lodash express react axios typescript; do
+            echo "===== $pkg ====="
+            ./target/release/safe-npm tree "$pkg" --json --max-depth 8 --max-packages 500 | tee "benchmark-results/$pkg.json"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: safe-npm-package-examples
+          path: benchmark-results/*.json
