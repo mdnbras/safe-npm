@@ -225,6 +225,25 @@ article {
     font-size: 18px
 }
 
+#download article {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start
+}
+
+#download article .button {
+    margin-top: auto
+}
+
+.download-note {
+    margin-top: 24px;
+    color: var(--muted)
+}
+
+.download-note a {
+    color: var(--green)
+}
+
 .start {
     border-block: 1px solid var(--line);
     display: grid;
