@@ -2,9 +2,17 @@
 
 **See the package before it executes.** safe-npm is a local-first static security scanner for npm packages, written in Rust.
 
-> v0.2 scans the requested package **and its transitive production dependency tree** without executing package code.
+> v0.3 combines static source scanning, transitive dependency analysis and npm Registry intelligence **before package execution**.
 
-## v0.2 highlights
+## v0.3 highlights
+
+- **Typosquatting heuristic:** flags names one edit away from a curated set of popular npm packages.
+- **Registry trust signals:** deprecated versions, missing maintainers and extremely short version history.
+- **Obfuscation-density heuristic:** detects unusually long/minified lines and dense hex/unicode escape usage.
+- Registry signals are scored together with source-code findings across the full dependency tree.
+- All v0.2 dependency-tree protections remain: SemVer resolution, cycle/dedup protection, bounded traversal and safe install policy.
+
+## v0.2 foundation
 
 - Recursive dependency-tree scanning with cycle/dedup protection.
 - SemVer range resolution against the npm Registry.
@@ -66,7 +74,7 @@ The current ruleset looks for lifecycle scripts, process/shell execution, dynami
 
 Package score: LOW 0–19, MEDIUM 20–44, HIGH 45–74, CRITICAL 75–100.
 
-## v0.2 architecture
+## Architecture
 
 ```text
 package@range
@@ -105,7 +113,7 @@ If Pages is configured to use **GitHub Actions** as its source, pushes affecting
 
 ## Security boundaries
 
-safe-npm v0.2 deliberately does not execute downloaded packages. Individual source files larger than 2 MiB are skipped. Tree traversal is bounded by depth and package count. Git, local-file and direct HTTP dependency sources are currently reported as unsupported rather than fetched.
+safe-npm v0.3 deliberately does not execute downloaded packages. Individual source files larger than 2 MiB are skipped. Tree traversal is bounded by depth and package count. Git, local-file and direct HTTP dependency sources are currently reported as unsupported rather than fetched.
 
 The scanner is heuristic: **a finding is not proof of malware, and a clean report is not proof of safety.** Use safe-npm as one defense-in-depth layer alongside npm audit, provenance/signature verification, lockfiles, review and runtime isolation.
 
