@@ -34,7 +34,7 @@ pub struct Finding {
     pub path: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ScanReport {
     pub package: String,
     pub version: String,
