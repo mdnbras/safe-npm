@@ -73,7 +73,11 @@ Analisar um único tarball:
 ```bash
 safe-npm scan lodash
 safe-npm scan lodash --json
+safe-npm scan lodash --html
+safe-npm scan lodash --html relatorios/lodash.html
 ```
+
+Os relatórios HTML são arquivos standalone e incluem score do pacote, nível de risco, resumo por severidade, findings detalhados, evidências de código e validação por IA quando `--ai` estiver habilitado. Ao usar apenas `--html`, o arquivo gerado será `safe-npm-report.html`.
 
 Analisar toda a árvore de dependências de produção:
 
