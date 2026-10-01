@@ -62,6 +62,14 @@ AI validation sends the rule name, file path and a short source excerpt for MEDI
 
 ## Install
 
+Prebuilt binaries are attached to every GitHub release:
+
+- Linux x86_64: `safe-npm-linux-x86_64.tar.gz`
+- Windows x86_64: `safe-npm-windows-x86_64.zip`
+- macOS Universal (Intel + Apple Silicon): `safe-npm-macos-universal.tar.gz`
+
+You can also build/install directly from source:
+
 ```bash
 cargo install --git https://github.com/mdnbras/safe-npm
 ```
