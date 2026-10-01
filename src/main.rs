@@ -38,7 +38,7 @@ fn scan_package(spec: &str) -> Result<ScanReport> {
     let registry = registry::RegistryClient::new()?;
     let artifact = registry.resolve(spec)?;
     let bytes = registry.download(&artifact)?;
-    scanner::scan_tarball(&artifact.name, &artifact.version, &bytes)
+    scanner::scan_tarball_with_signals(&artifact.name, &artifact.version, &bytes, Some(&artifact.signals))
 }
 
 fn scan_tree(spec: &str, max_depth: usize, max_packages: usize) -> Result<TreeReport> {
