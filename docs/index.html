@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>safe-npm — veja o pacote antes que ele execute</title><meta name="description" content="Scanner open source em Rust que analisa pacotes npm e dependências antes da instalação.">
+<title>safe-npm - veja o pacote antes que ele execute</title><meta name="description" content="Scanner open source em Rust que analisa pacotes npm e dependências antes da instalação.">
 <link rel="stylesheet" href="style.css"></head><body>
 <nav><a class="brand" href="#">safe-npm<span>.</span></a><div><a href="#como">Como funciona</a><a href="#detecta">Detecções</a><a class="button ghost" href="https://github.com/mdnbras/safe-npm">GitHub</a></div></nav>
 <main>
-<section class="hero"><div class="eyebrow">V0.4 · OPEN SOURCE · RUST · SUPPLY CHAIN SECURITY</div><h1>Veja o pacote.<br><em>Antes que ele execute.</em></h1>
-<p class="lead">O safe-npm correlaciona comportamentos, inspeciona código, Registry e dependências antes da instalação — sem executar o pacote.</p>
+<section class="hero"><div class="eyebrow">V0.4 · OPEN SOURCE · RUST · SUPPLY CHAIN SECURITY</div><h1>Confira o pacote.<br><em>Antes de instalar.</em></h1>
+<p class="lead">Antes de instalar um pacote, o safe-npm analisa o código, consulta informações do npm Registry e verifica as dependências. Tudo isso sem executar o pacote.</p>
 <div class="actions"><a class="button" href="https://github.com/mdnbras/safe-npm">Ver no GitHub →</a><a href="#start">Começar agora</a></div>
 <div class="terminal"><div class="dots">● ● ● <b>safe-npm</b></div><pre><span>$</span> safe-npm tree suspicious-package
 Root: suspicious-package@1.4.2
@@ -13,23 +13,23 @@ Packages: 47   Files: 1,284   Risk: <strong>HIGH</strong>
 
 • suspicious-package@1.4.2  score=10/100 (MEDIUM)
 • tiny-helper@0.2.1        score=65/100 (<strong>HIGH</strong>)
-  ! [CRITICAL] credential-access — package/index.js
-  ! [HIGH] process-execution — package/index.js
+  ! [CRITICAL] credential-access - package/index.js
+  ! [HIGH] process-execution - package/index.js
 
 <span class="blocked">Installation blocked before package execution.</span></pre></div></section>
 
 <section class="stats"><div><b>0</b><span>pacotes executados durante o scan</span></div><div><b>100%</b><span>scanner escrito em Rust</span></div><div><b>∞</b><span>dependências transitivas*</span></div><small>* com limites configuráveis de segurança</small></section>
 
-<section id="como"><div class="section-tag">COMO FUNCIONA</div><h2>Uma camada antes do <code>npm install</code>.</h2>
-<div class="steps"><article><i>01</i><h3>Resolve</h3><p>Consulta metadados do npm Registry e resolve versões e ranges SemVer.</p></article><article><i>02</i><h3>Baixa</h3><p>Obtém cada tarball da árvore sem executar código do pacote.</p></article><article><i>03</i><h3>Analisa</h3><p>Inspeciona package.json, JavaScript e TypeScript em memória.</p></article><article><i>04</i><h3>Decide</h3><p>Gera score de risco e bloqueia HIGH/CRITICAL antes da instalação.</p></article></div></section>
+<section id="como"><div class="section-tag">COMO FUNCIONA</div><h2>Analise antes de rodar <code>npm install</code>.</h2>
+<div class="steps"><article><i>01</i><h3>Resolve</h3><p>Consulta o npm Registry para identificar a versão correta do pacote e suas dependências.</p></article><article><i>02</i><h3>Baixa</h3><p>Baixa os pacotes que precisam ser analisados sem executar scripts de instalação.</p></article><article><i>03</i><h3>Analisa</h3><p>Verifica package.json, arquivos JavaScript e TypeScript em busca de comportamentos suspeitos.</p></article><article><i>04</i><h3>Decide</h3><p>Mostra o nível de risco encontrado e pode impedir a instalação quando o risco for alto.</p></article></div></section>
 
-<section id="detecta"><div class="section-tag">O QUE ELE PROCURA</div><h2>Sinais que merecem sua atenção.</h2>
-<div class="grid"><article><b>Lifecycle scripts</b><p>preinstall, install, postinstall e prepare.</p></article><article><b>Execução de processos</b><p>child_process, exec, spawn, shells e comandos.</p></article><article><b>Credenciais</b><p>.npmrc, .ssh, tokens npm/GitHub e secrets AWS.</p></article><article><b>Código dinâmico</b><p>eval, new Function e padrões de execução dinâmica.</p></article><article><b>Rede</b><p>APIs e indicadores de conexões externas.</p></article><article><b>Ofuscação</b><p>Base64, escapes hex/unicode e densidade anormal de código.</p></article><article><b>Typosquatting</b><p>Nomes muito próximos de pacotes npm populares.</p></article><article><b>Registry intelligence</b><p>Depreciação, mantenedores ausentes e histórico muito curto.</p></article><article><b>Correlação comportamental</b><p>Combina sinais de credenciais, rede e execução para elevar riscos compostos.</p></article><article><b>Policy + SARIF</b><p>Políticas versionáveis e saída pronta para pipelines de segurança.</p></article></div></section>
+<section id="detecta"><div class="section-tag">O QUE ELE PROCURA</div><h2>O que o safe-npm verifica.</h2>
+<div class="grid"><article><b>Lifecycle scripts</b><p>preinstall, install, postinstall e prepare.</p></article><article><b>Execução de processos</b><p>child_process, exec, spawn, shells e comandos.</p></article><article><b>Credenciais</b><p>.npmrc, .ssh, tokens npm/GitHub e secrets AWS.</p></article><article><b>Código dinâmico</b><p>eval, new Function e padrões de execução dinâmica.</p></article><article><b>Rede</b><p>APIs e indicadores de conexões externas.</p></article><article><b>Ofuscação</b><p>Base64, escapes hex/unicode e densidade anormal de código.</p></article><article><b>Typosquatting</b><p>Nomes muito próximos de pacotes npm populares.</p></article><article><b>Registry intelligence</b><p>Depreciação, mantenedores ausentes e histórico muito curto.</p></article><article><b>Correlação comportamental</b><p>Cruza sinais como acesso a credenciais, chamadas de rede e execução de comandos.</p></article><article><b>Policy + SARIF</b><p>Permite definir regras por projeto e gerar relatórios SARIF para uso no CI.</p></article></div></section>
 
-<section id="start" class="start"><div><div class="section-tag">COMECE AGORA</div><h2>Um comando entre você<br>e a próxima dependência.</h2></div><pre><span>$</span> cargo install --git https://github.com/mdnbras/safe-npm
+<section id="start" class="start"><div><div class="section-tag">COMECE AGORA</div><h2>Confira uma dependência<br>antes de colocar no projeto.</h2></div><pre><span>$</span> cargo install --git https://github.com/mdnbras/safe-npm
 <span>$</span> safe-npm tree express
 <span>$</span> safe-npm install express</pre></section>
 
-<section class="note"><h2>Segurança sem falsa promessa.</h2><p>safe-npm usa análise estática heurística. Um alerta não prova malware e a ausência de alertas não prova segurança. Ele complementa — não substitui — npm audit, provenance, assinatura, revisão humana e outras camadas de defesa.</p></section>
+<section class="note"><h2>O scanner ajuda, mas não substitui uma revisão de segurança.</h2><p>O safe-npm trabalha com análise estática e heurísticas. Um alerta indica algo que vale a pena revisar, mas não significa automaticamente que o pacote contém malware. Da mesma forma, um resultado sem alertas não garante que o pacote seja seguro. Use a ferramenta junto com npm audit, provenance, assinaturas e revisão de código.</p></section>
 </main><footer><a class="brand" href="#">safe-npm<span>.</span></a><p>Open source · MIT · Feito em Rust</p><a href="https://github.com/mdnbras/safe-npm">github.com/mdnbras/safe-npm</a></footer>
 </body></html>
