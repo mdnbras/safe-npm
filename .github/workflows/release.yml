@@ -1,0 +1,159 @@
+name: Release binaries
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to build (defaults to Cargo.toml version)"
+        required: false
+        type: string
+  push:
+    branches: [master]
+    paths:
+      - ".github/workflows/release.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    name: Prepare release
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+      publish: ${{ steps.release.outputs.publish }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Resolve release tag
+        id: release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          VERSION="$(awk -F'"' '/^version = / { print $2; exit }' Cargo.toml)"
+          if [ -z "$VERSION" ]; then
+            echo "Could not resolve package version from Cargo.toml."
+            exit 1
+          fi
+
+          if [ "$EVENT_NAME" = "release" ]; then
+            TAG="$RELEASE_TAG"
+            PUBLISH=true
+          elif [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            TAG="${INPUT_TAG:-v$VERSION}"
+            PUBLISH=true
+            if ! gh release view "$TAG" >/dev/null 2>&1; then
+              gh release create "$TAG" --target "$GITHUB_SHA" --title "safe-npm $TAG" --generate-notes
+            fi
+          else
+            TAG="v$VERSION"
+            if gh release view "$TAG" >/dev/null 2>&1; then
+              echo "Release $TAG already exists. Bootstrap build is not needed."
+              PUBLISH=false
+            else
+              gh release create "$TAG" --target "$GITHUB_SHA" --title "safe-npm $TAG" --generate-notes
+              PUBLISH=true
+            fi
+          fi
+
+          EXPECTED_VERSION="${TAG#v}"
+          if [ "$EXPECTED_VERSION" != "$VERSION" ]; then
+            echo "Release tag $TAG does not match Cargo.toml version $VERSION."
+            exit 1
+          fi
+
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "publish=$PUBLISH" >> "$GITHUB_OUTPUT"
+
+  linux:
+    name: Linux x86_64
+    needs: prepare
+    if: needs.prepare.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.prepare.outputs.tag }}
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-gnu
+      - name: Build
+        run: cargo build --release --target x86_64-unknown-linux-gnu
+      - name: Package
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp target/x86_64-unknown-linux-gnu/release/safe-npm dist/
+          tar -czf safe-npm-linux-x86_64.tar.gz -C dist safe-npm
+      - name: Upload release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+        run: gh release upload "$TAG" safe-npm-linux-x86_64.tar.gz --clobber
+
+  windows:
+    name: Windows x86_64
+    needs: prepare
+    if: needs.prepare.outputs.publish == 'true'
+    runs-on: windows-latest
+    steps:
+      - name: Checkout release
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.prepare.outputs.tag }}
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+      - name: Build
+        run: cargo build --release --target x86_64-pc-windows-msvc
+      - name: Package
+        shell: pwsh
+        run: Compress-Archive -Path target/x86_64-pc-windows-msvc/release/safe-npm.exe -DestinationPath safe-npm-windows-x86_64.zip -Force
+      - name: Upload release asset
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+        run: gh release upload "$env:TAG" safe-npm-windows-x86_64.zip --clobber
+
+  macos:
+    name: macOS universal
+    needs: prepare
+    if: needs.prepare.outputs.publish == 'true'
+    runs-on: macos-latest
+    steps:
+      - name: Checkout release
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.prepare.outputs.tag }}
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-apple-darwin,aarch64-apple-darwin
+      - name: Build x86_64
+        run: cargo build --release --target x86_64-apple-darwin
+      - name: Build Apple Silicon
+        run: cargo build --release --target aarch64-apple-darwin
+      - name: Package universal binary
+        shell: bash
+        run: |
+          mkdir -p dist
+          lipo -create target/x86_64-apple-darwin/release/safe-npm target/aarch64-apple-darwin/release/safe-npm -output dist/safe-npm
+          chmod +x dist/safe-npm
+          tar -czf safe-npm-macos-universal.tar.gz -C dist safe-npm
+      - name: Upload release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+        run: gh release upload "$TAG" safe-npm-macos-universal.tar.gz --clobber
