@@ -1,5 +1,9 @@
 # safe-npm
 
+<p align="center">
+  <img src="docs/assets/safe-npm-social-preview.svg" alt="safe-npm - scan npm packages before installation" width="100%">
+</p>
+
 [English](README.md) | **Português (Brasil)**
 
 **Veja o pacote antes que ele execute.** O safe-npm é um scanner local de segurança estática para pacotes npm, escrito em Rust.
@@ -215,6 +219,12 @@ cargo clippy --all-targets --all-features -- -D warnings
 cargo test --all-features
 cargo build --release
 ```
+
+## Comunidade e segurança
+
+- [Como contribuir](CONTRIBUTING.md)
+- [Política de segurança](SECURITY.md)
+- [Código de Conduta](CODE_OF_CONDUCT.md)
 
 ## Licença
 
