@@ -1,156 +1,133 @@
 # safe-npm
 
-A fast, local-first static security scanner for npm packages, written in Rust.
+**See the package before it executes.** safe-npm is a local-first static security scanner for npm packages, written in Rust.
 
-**safe-npm downloads the package tarball from the npm registry and inspects it before npm executes the package.** It is designed as an additional supply-chain security layer, not as a replacement for `npm audit`, provenance verification, antivirus software, or human review.
+> v0.2 scans the requested package **and its transitive production dependency tree** without executing package code.
 
-## Why?
+## v0.2 highlights
 
-`npm audit` is primarily focused on known vulnerabilities in dependency trees. npm can also verify registry signatures/provenance and control install scripts. Those mechanisms are valuable, but they do not answer a different question:
+- Recursive dependency-tree scanning with cycle/dedup protection.
+- SemVer range resolution against the npm Registry.
+- Configurable `--max-depth` (default 8) and `--max-packages` (default 500).
+- Aggregated tree risk: the highest package risk becomes the installation policy risk.
+- Unsupported git/file/http dependency sources are reported instead of silently trusted.
+- Existing single-package `scan` mode remains available.
+- `install` now scans the dependency tree before allowing npm to run.
+- Lifecycle scripts stay disabled by default with `--ignore-scripts`.
+- JSON tree report for CI/CD.
+- Static landing page in `docs/`, ready for GitHub Pages.
 
-> "Does the package I am about to install contain suspicious code patterns?"
-
-safe-npm v0.1.0 starts answering that question without executing the package.
-
-## Features
-
-- Downloads package metadata and tarball directly from the npm registry.
-- Does **not** run package code during scanning.
-- Scans JavaScript, TypeScript and `package.json` files in-memory.
-- Detects install lifecycle scripts: `preinstall`, `install`, `postinstall`, `prepare`.
-- Detects indicators for:
-  - process/shell execution;
-  - dynamic code execution;
-  - credential/token access;
-  - environment-variable access;
-  - network access;
-  - encoded/obfuscated payloads.
-- Produces a 0–100 risk score and LOW/MEDIUM/HIGH/CRITICAL classification.
-- JSON output for CI/CD integration.
-- `safe-npm install` blocks HIGH/CRITICAL packages by default.
-- Lifecycle scripts remain disabled during installation unless explicitly allowed.
-
-## Install from source
+## Install
 
 ```bash
 cargo install --git https://github.com/mdnbras/safe-npm
 ```
 
-Or:
-
-```bash
-git clone https://github.com/mdnbras/safe-npm.git
-cd safe-npm
-cargo build --release
-```
-
 ## Usage
 
-Scan the latest version:
+Single tarball:
 
 ```bash
 safe-npm scan lodash
-```
-
-Scan an exact version:
-
-```bash
-safe-npm scan express@5.1.0
-safe-npm scan @scope/package@1.2.3
-```
-
-Machine-readable output:
-
-```bash
 safe-npm scan lodash --json
 ```
 
-Scan and install:
+Full production dependency tree:
 
 ```bash
-safe-npm install lodash
+safe-npm tree express
+safe-npm tree express --max-depth 10 --max-packages 1000
+safe-npm tree express --json
 ```
 
-By default, installation uses `npm install <package> --ignore-scripts`. To explicitly enable lifecycle scripts after reviewing the report:
+Scan the tree and install only if policy allows:
 
 ```bash
-safe-npm install some-package --allow-scripts
+safe-npm install express
 ```
 
-To override a HIGH/CRITICAL block:
+HIGH or CRITICAL anywhere in the scanned tree blocks installation. Overrides are explicit:
 
 ```bash
-safe-npm install some-package --allow-risk
+safe-npm install package --allow-risk
+safe-npm install package --allow-scripts
 ```
 
-## Risk model
+## What is detected?
 
-| Finding | Weight |
+The current ruleset looks for lifecycle scripts, process/shell execution, dynamic code execution, credential/token access, environment access, network-capable code and encoded/obfuscated payload indicators.
+
+| Severity | Weight |
 |---|---:|
 | LOW | 3 |
 | MEDIUM | 10 |
 | HIGH | 25 |
 | CRITICAL | 40 |
 
-Score classification: LOW 0–19, MEDIUM 20–44, HIGH 45–74, CRITICAL 75–100.
+Package score: LOW 0–19, MEDIUM 20–44, HIGH 45–74, CRITICAL 75–100.
 
-The score is a heuristic. A finding is **not proof of malware**, and a low score is **not proof of safety**. Legitimate packages can use process execution, networking, environment variables, or install scripts.
-
-## Security model
-
-safe-npm v0.1 intentionally favors a simple, auditable architecture:
+## v0.2 architecture
 
 ```text
-Package spec
-    |
-    v
+package@range
+     |
+     v
 npm Registry metadata
-    |
-    v
-Download .tgz ----> no execution
-    |
-    v
-In-memory tar.gz inspection
-    |
-    +--> package.json lifecycle analysis
-    +--> source pattern rules
-    |
-    v
-Findings + risk score
-    |
-    +--> scan: report only
-    |
-    +--> install: policy gate --> npm install --ignore-scripts
+     |
+     +---- resolve SemVer ----+
+     |                       |
+     v                       v
+download root .tgz       dependency ranges
+     |                       |
+     v                       +---- recursive queue
+static scanner                        |
+     |                                v
+     +---------------------- scan dependency .tgz
+                              |
+                              v
+                    deduplicate / prevent cycles
+                              |
+                              v
+                    aggregate tree risk
+                              |
+                 +------------+-------------+
+                 |                          |
+              report                 install policy
+                                      |
+                             npm --ignore-scripts
 ```
 
-The scanner skips individual files larger than 2 MiB in v0.1 to bound memory use.
+## Landing page
+
+The website source lives in `docs/`. A GitHub Pages workflow is included at `.github/workflows/pages.yml`.
+
+If Pages is configured to use **GitHub Actions** as its source, pushes affecting `docs/` automatically deploy the site.
+
+## Security boundaries
+
+safe-npm v0.2 deliberately does not execute downloaded packages. Individual source files larger than 2 MiB are skipped. Tree traversal is bounded by depth and package count. Git, local-file and direct HTTP dependency sources are currently reported as unsupported rather than fetched.
+
+The scanner is heuristic: **a finding is not proof of malware, and a clean report is not proof of safety.** Use safe-npm as one defense-in-depth layer alongside npm audit, provenance/signature verification, lockfiles, review and runtime isolation.
 
 ## Roadmap
 
-- Dependency-tree scanning.
-- Typosquatting/package-name heuristics.
-- npm registry signature and provenance verification.
-- Maintainer/package-age/release-anomaly signals.
-- Entropy and minification/obfuscation heuristics.
 - AST-based JavaScript/TypeScript analysis.
+- Typosquatting and package-name similarity.
+- Registry signature/provenance verification.
+- Package age, maintainer and release-anomaly signals.
+- Entropy/minification heuristics.
 - Configurable policies and allowlists.
-- SARIF output and GitHub Code Scanning integration.
-- GitHub Actions and pre-commit/CI examples.
-- Parallel scanning and local metadata cache.
+- SARIF / GitHub Code Scanning.
+- Parallel downloads/scanning and metadata cache.
 
 ## Development
 
 ```bash
 cargo fmt --check
-cargo test
-cargo clippy -- -D warnings
+cargo clippy --all-targets --all-features -- -D warnings
+cargo test --all-features
+cargo build --release
 ```
-
-## Important limitations
-
-This project performs heuristic static analysis. It cannot guarantee that a package is safe, and malware may evade pattern-based detection. It also does not currently recursively inspect all transitive dependencies.
-
-Use it as one layer in a defense-in-depth supply-chain security strategy.
 
 ## License
 
