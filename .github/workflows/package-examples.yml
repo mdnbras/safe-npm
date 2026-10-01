@@ -23,7 +23,7 @@ jobs:
             echo "===== $pkg ====="
             ./target/release/safe-npm tree "$pkg" --json --max-depth 8 --max-packages 500 | tee "benchmark-results/$pkg.json"
           done
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: safe-npm-package-examples
           path: benchmark-results/*.json
