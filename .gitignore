@@ -1,3 +1,23 @@
 /target
 .DS_Store
 *.log
+
+# Environment and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local safe-npm reports and overrides
+lodash-ai-report.json
+safe-npm.sarif
+.safe-npm.local.toml
