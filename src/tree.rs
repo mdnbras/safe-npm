@@ -66,6 +66,11 @@ pub fn scan_dependency_tree(spec: &str, options: TreeOptions) -> Result<TreeRepo
     Ok(TreeReport{root,risk_level,packages_scanned:packages.len(),files_scanned,packages,errors})
 }
 
+pub fn recalculate(report:&mut TreeReport){
+    report.root=report.packages.first().map(|p|p.report.clone()).unwrap_or_else(||report.root.clone());
+    report.risk_level=report.packages.iter().map(|p|p.report.risk_level.clone()).max_by_key(risk_rank).unwrap_or(RiskLevel::Low);
+    report.files_scanned=report.packages.iter().map(|p|p.report.files_scanned).sum();
+}
 fn risk_rank(level:&RiskLevel)->u8 {
     match level { RiskLevel::Low=>0,RiskLevel::Medium=>1,RiskLevel::High=>2,RiskLevel::Critical=>3 }
 }
