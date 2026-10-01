@@ -1,0 +1,65 @@
+name: AI package test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  authorize:
+    name: Verify repository owner
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify actor
+        env:
+          ALLOWED_ACTOR: mdnbras
+        run: |
+          if [ "$GITHUB_ACTOR" != "$ALLOWED_ACTOR" ]; then
+            echo "This workflow can only be executed by the repository owner."
+            exit 1
+          fi
+
+  scan-lodash:
+    name: Scan lodash with AI
+    needs: authorize
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Verify OpenAI secret
+        shell: bash
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "Repository secret OPENAI_TOKEN is not configured."
+            exit 1
+          fi
+
+      - name: Build safe-npm
+        run: cargo build --release
+
+      - name: Scan lodash with AI validation
+        run: ./target/release/safe-npm --ai scan lodash --json > lodash-ai-report.json
+
+      - name: Print safe summary
+        shell: bash
+        run: |
+          jq '{package, version, score, risk_level, files_scanned, findings: [.findings[] | {rule, severity, path, ai_validation}]}' lodash-ai-report.json
+
+      - name: Upload JSON report
+        uses: actions/upload-artifact@v4
+        with:
+          name: lodash-ai-report
+          path: lodash-ai-report.json
+          if-no-files-found: error
+          retention-days: 7
