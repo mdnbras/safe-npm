@@ -15,8 +15,15 @@ pub struct AiValidation {
 pub fn validate_findings(findings: &mut [Finding], model: &str) -> Result<()> {
     let key = env::var("OPENAI_API_KEY").context("OPENAI_API_KEY is required when --ai is enabled")?;
     let client = Client::new();
-    for finding in findings.iter_mut().filter(|f| matches!(f.severity, Severity::High | Severity::Critical)) {
-        let Some(evidence) = finding.evidence.as_deref() else { continue };
+    for finding in findings.iter_mut().filter(|f| matches!(f.severity, Severity::Medium | Severity::High | Severity::Critical)) {
+        let Some(evidence) = finding.evidence.as_deref() else {
+            finding.ai_validation = Some(AiValidation {
+                verdict: "not_analyzed".into(),
+                confidence: 0.0,
+                reason: "No contextual evidence was captured for this finding.".into(),
+            });
+            continue;
+        };
         let input = format!(
             "Review this static npm security finding. Classify only the supplied evidence. Rule: {}. Path: {}. Evidence:\n{}",
             finding.rule,
