@@ -62,10 +62,10 @@ impl RegistryClient {
 
     fn metadata(&self, name: &str) -> Result<Value> {
         let encoded=urlencoding::encode(name);
-        Ok(self.client.get(format!("https://registry.npmjs.org/{encoded}")).send()
+        self.client.get(format!("https://registry.npmjs.org/{encoded}")).send()
             .context("failed to query npm registry")?.error_for_status()
             .context("npm registry returned an error")?.json()
-            .context("invalid npm registry metadata")?)
+            .context("invalid npm registry metadata")
     }
 }
 
