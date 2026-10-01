@@ -13,9 +13,15 @@ pub struct AiValidation {
 }
 
 pub fn validate_findings(findings: &mut [Finding], model: &str) -> Result<()> {
-    let key = env::var("OPENAI_API_KEY").context("OPENAI_API_KEY is required when --ai is enabled")?;
+    let key =
+        env::var("OPENAI_API_KEY").context("OPENAI_API_KEY is required when --ai is enabled")?;
     let client = Client::new();
-    for finding in findings.iter_mut().filter(|f| matches!(f.severity, Severity::Medium | Severity::High | Severity::Critical)) {
+    for finding in findings.iter_mut().filter(|f| {
+        matches!(
+            f.severity,
+            Severity::Medium | Severity::High | Severity::Critical
+        )
+    }) {
         let Some(evidence) = finding.evidence.as_deref() else {
             finding.ai_validation = Some(AiValidation {
                 verdict: "not_analyzed".into(),
@@ -36,32 +42,63 @@ pub fn validate_findings(findings: &mut [Finding], model: &str) -> Result<()> {
             "input": input,
             "max_output_tokens": 400
         });
-        let response: Value = client.post("https://api.openai.com/v1/responses")
-            .bearer_auth(&key).json(&body).send().context("OpenAI request failed")?
-            .error_for_status().context("OpenAI API returned an error")?.json()?;
-        let text = response.get("output").and_then(Value::as_array)
-            .and_then(|o| o.iter().find_map(|item| item.get("content")?.as_array()?.iter()
-                .find_map(|c| c.get("text")?.as_str()))).context("OpenAI response did not contain text")?;
-        let clean=text.trim().trim_start_matches("```json").trim_start_matches("```").trim_end_matches("```").trim();
+        let response: Value = client
+            .post("https://api.openai.com/v1/responses")
+            .bearer_auth(&key)
+            .json(&body)
+            .send()
+            .context("OpenAI request failed")?
+            .error_for_status()
+            .context("OpenAI API returned an error")?
+            .json()?;
+        let text = response
+            .get("output")
+            .and_then(Value::as_array)
+            .and_then(|o| {
+                o.iter().find_map(|item| {
+                    item.get("content")?
+                        .as_array()?
+                        .iter()
+                        .find_map(|c| c.get("text")?.as_str())
+                })
+            })
+            .context("OpenAI response did not contain text")?;
+        let clean = text
+            .trim()
+            .trim_start_matches("```json")
+            .trim_start_matches("```")
+            .trim_end_matches("```")
+            .trim();
         let validation = match serde_json::from_str::<AiValidation>(clean) {
             Ok(validation) => validation,
             Err(err) => AiValidation {
                 verdict: "uncertain".into(),
                 confidence: 0.0,
-                reason: format!("OpenAI returned an invalid or incomplete validation response: {err}"),
+                reason: format!(
+                    "OpenAI returned an invalid or incomplete validation response: {err}"
+                ),
             },
         };
-        finding.ai_validation=Some(validation);
+        finding.ai_validation = Some(validation);
     }
     Ok(())
 }
 
-pub fn apply_ai_verdicts(findings:&mut Vec<Finding>) {
-    findings.retain(|f| !matches!(f.ai_validation.as_ref().map(|v|v.verdict.as_str()),Some("false_positive")) ||
-        f.ai_validation.as_ref().is_some_and(|v|v.confidence < 0.80));
+pub fn apply_ai_verdicts(findings: &mut Vec<Finding>) {
+    findings.retain(|f| {
+        !matches!(
+            f.ai_validation.as_ref().map(|v| v.verdict.as_str()),
+            Some("false_positive")
+        ) || f
+            .ai_validation
+            .as_ref()
+            .is_some_and(|v| v.confidence < 0.80)
+    });
 }
 
-pub fn require_supported_model(model:&str)->Result<()> {
-    if model.trim().is_empty(){bail!("AI model cannot be empty");}
+pub fn require_supported_model(model: &str) -> Result<()> {
+    if model.trim().is_empty() {
+        bail!("AI model cannot be empty");
+    }
     Ok(())
 }
